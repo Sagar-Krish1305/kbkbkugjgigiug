@@ -40,7 +40,7 @@ export function PageHeader({
         <h1
           className="font-heading text-2xl font-semibold tracking-tight text-balance"
           style={{
-            paddingTop: "20px"
+            paddingTop: "0px"
           }}>{title}</h1>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
