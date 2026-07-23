@@ -22,14 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 
 const SLA_RANK: Record<string, number> = { breached: 0, at_risk: 1, on_track: 2, met: 3 }
@@ -163,63 +156,63 @@ export default function Tickets() {
           <EmptyState icon={Inbox} title="Your queue is clear" description="There are no tickets yet. Create one to get started." />
         )
       ) : (
-        <TicketTable rows={rows} onOpen={(id) => navigate(`/tickets/${id}`)} />
+        <TicketCardGrid rows={rows} onOpen={(id) => navigate(`/tickets/${id}`)} />
       )}
     </div>
   )
 }
 
-function TicketTable({ rows, onOpen }: { rows: Ticket[]; onOpen: (id: string) => void }) {
+function TicketCardGrid({ rows, onOpen }: { rows: Ticket[]; onOpen: (id: string) => void }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className="w-[104px]">Ref</TableHead>
-            <TableHead>Subject</TableHead>
-            <TableHead className="hidden md:table-cell">Priority</TableHead>
-            <TableHead className="hidden lg:table-cell">Status</TableHead>
-            <TableHead className="hidden xl:table-cell">Assignee</TableHead>
-            <TableHead className="text-right">SLA</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((t) => {
-            const assignee = getAgent(t.assigneeId)
-            const requester = getRequester(t.requesterId)
-            return (
-              <TableRow
-                key={t.id}
-                onClick={() => onOpen(t.id)}
-                className="cursor-pointer"
-              >
-                <TableCell className="font-mono text-xs font-medium text-muted-foreground">{t.ref}</TableCell>
-                <TableCell className="max-w-[420px]">
-                  <div className="truncate font-medium">{t.subject}</div>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                    <TypeBadge type={t.type} />
-                    <span>·</span>
-                    <span className="truncate">{requester?.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden md:table-cell"><PriorityBadge priority={t.priority} /></TableCell>
-                <TableCell className="hidden lg:table-cell"><StatusBadge status={t.status} /></TableCell>
-                <TableCell className="hidden xl:table-cell">
-                  {assignee ? (
-                    <span className="flex items-center gap-2">
-                      <Avatar className="size-6"><AvatarFallback className="bg-muted text-[10px] font-semibold">{assignee.initials}</AvatarFallback></Avatar>
-                      <span className="truncate text-sm">{assignee.name}</span>
-                    </span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">Unassigned</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right"><SlaBadge ticket={t} /></TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-3">
+      {rows.map((t) => (
+        <TicketCard key={t.id} ticket={t} onOpen={onOpen} />
+      ))}
     </div>
+  )
+}
+
+function TicketCard({ ticket, onOpen }: { ticket: Ticket; onOpen: (id: string) => void }) {
+  const assignee = getAgent(ticket.assigneeId)
+  const requester = getRequester(ticket.requesterId)
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(ticket.id)}
+      className={cn(
+        'group flex flex-col gap-3 rounded-lg border border-border bg-card p-4 text-left',
+        'transition-colors hover:border-ring/40 hover:bg-accent/40',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-mono text-xs font-medium text-muted-foreground">{ticket.ref}</span>
+        <SlaBadge ticket={ticket} />
+      </div>
+
+      <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+        {ticket.subject}
+      </h3>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <PriorityBadge priority={ticket.priority} />
+        <StatusBadge status={ticket.status} />
+        <TypeBadge type={ticket.type} />
+      </div>
+
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-3">
+        <span className="truncate text-xs text-muted-foreground">{requester?.name}</span>
+        {assignee ? (
+          <span className="flex items-center gap-1.5">
+            <Avatar className="size-6">
+              <AvatarFallback className="bg-muted text-[10px] font-semibold">{assignee.initials}</AvatarFallback>
+            </Avatar>
+            <span className="truncate text-xs font-medium text-foreground">{assignee.name}</span>
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Unassigned</span>
+        )}
+      </div>
+    </button>
   )
 }
