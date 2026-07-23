@@ -5,6 +5,14 @@ import { useUiStore } from '@/lib/store'
 import { PageHeader, EmptyState } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { Service } from '@/lib/types'
 
 function fulfillmentLabel(hours: number): string {
@@ -59,24 +67,33 @@ export default function Catalog() {
                 {category}
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">{items.length}</span>
               </h2>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-4">
-                {items.map((s) => (
-                  <article
-                    key={s.id}
-                    className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
-                  >
-                    <div className="flex flex-col gap-1.5">
-                      <h3 className="font-heading text-base font-semibold leading-snug text-foreground">{s.name}</h3>
-                      <p className="text-sm leading-relaxed text-muted-foreground">{s.description}</p>
-                    </div>
-                    <div className="mt-auto flex items-center justify-between gap-3 pt-1">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Clock className="size-3.5" /> {fulfillmentLabel(s.fulfillmentHours)}
-                      </span>
-                      <Button size="sm" variant="secondary" onClick={() => requestService(s)}>Request</Button>
-                    </div>
-                  </article>
-                ))}
+              <div className="overflow-hidden rounded-lg border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-[28%]">Service</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="w-32">Typical time</TableHead>
+                      <TableHead className="w-28 text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{s.description}</TableCell>
+                        <TableCell>
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock className="size-3.5" /> {fulfillmentLabel(s.fulfillmentHours)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="secondary" onClick={() => requestService(s)}>Request</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </section>
           ))}
